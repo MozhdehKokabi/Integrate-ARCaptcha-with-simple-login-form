@@ -4,21 +4,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	
 
 	"github.com/arcaptcha/arcaptcha-go"
 )
 
-func abc(w http.ResponseWriter, r *http.Request) {
+func ValidCaptcha(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.Error(w, "404 page not found", http.StatusNotFound)
-		return
-	}
-
-	website := arcaptcha.NewWebsite("1pr8g5l057", "66sw65442gwh0wummxvk")
-	challenge_id := r.FormValue("arcaptcha-token")
-	result, err := website.Verify(challenge_id)
-	if err != nil {
-		// throw Error
 		return
 	}
 
@@ -27,6 +20,14 @@ func abc(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./Html-frontend.html")
 
 	case "POST":
+
+		website := arcaptcha.NewWebsite("1pr8g5l057", "66sw65442gwh0wummxvk")
+		challenge_id := r.FormValue("arcaptcha-token")
+		result, err := website.Verify(challenge_id)
+		if err != nil {
+			// throw Error
+			return
+		}
 		if !result.Success {
 			http.ServeFile(w, r, "./Html-frontend.html")
 		}
@@ -47,7 +48,7 @@ func abc(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/", abc)
+	http.HandleFunc("/", ValidCaptcha)
 
 	fmt.Printf("starting server got testing\n")
 	if err := http.ListenAndServe(":8087", nil); err != nil {
